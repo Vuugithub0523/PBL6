@@ -1,0 +1,49 @@
+# ===== Python Cache =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ===== Môi trường ảo (KHÔNG PUSH) =====
+hand_env/
+venv/
+env/
+ENV/
+vsl_env/
+vsl_unified_env/
+
+# ===== Model Files (Quá lớn - tải riêng) =====
+*.pth
+*.h5
+*.tflite
+*.pb
+checkpoints_from_video/*.pth
+!checkpoints_from_video/.gitkeep
+
+# ===== Data Files =====
+*.csv
+training_history.json
+
+# ===== Runtime Data =====
+received_data/
+received_transcripts/
+outputs_word_pytorch/
+*.wav
+speech_temp.wav
+history.txt
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Logs =====
+*.log
+*.tmp
+*.bak

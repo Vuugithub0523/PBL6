@@ -1,0 +1,32 @@
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Data Processing
+numpy>=1.24.0
+scipy>=1.10.0
+opencv-python>=4.7.0
+pillow>=9.5.0
+
+# Training & Logging
+tensorboard>=2.12.0
+tqdm>=4.65.0
+
+# Visualization & Analysis
+matplotlib>=3.7.0
+seaborn>=0.12.0
+scikit-learn>=1.2.0  # Cần cho confusion matrix và metrics
+
+# Video Processing (Optional)
+ffmpeg-python>=0.2.0
+
+# Experiment Tracking (Optional)
+# wandb>=0.15.0
+
+# Model Optimization (Optional - for deployment)
+# onnx>=1.14.0
+# onnxruntime-gpu>=1.15.0
+
+# Real-time Inference (Optional)
+# mediapipe>=0.10.0  # For pose estimation
+
