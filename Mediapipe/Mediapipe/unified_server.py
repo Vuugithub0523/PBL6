@@ -7,7 +7,7 @@ Chạy: python unified_server.py
 Port: 5000
 """
 
-from flask import Flask, request, jsonify, render_template_string, Response
+from flask import Flask, request, jsonify, render_template, Response
 import os
 from datetime import datetime
 import threading
@@ -23,6 +23,15 @@ app = Flask(__name__)
 # ===== Camera Stream Storage =====
 latest_frame = None
 frame_lock = threading.Lock()
+
+# ===== Client Stats Storage =====
+client_stats = {
+    'fps': 0.0,
+    'buffer': '',
+    'predicted': '',
+    'last_update': None
+}
+stats_lock = threading.Lock()
 
 # ===== Cấu hình =====
 UPLOAD_FOLDER = "received_data"
@@ -243,14 +252,30 @@ def upload_speech():
 # ===== Endpoint: Camera Frame từ Sign Language Client =====
 @app.route('/upload_frame', methods=['POST'])
 def upload_frame():
-    """Nhận frame camera từ Sign Language client"""
-    global latest_frame
+    """Nhận frame camera + metadata từ Sign Language client"""
+    global latest_frame, client_stats
     try:
         frame_data = request.data
-        frame = pickle.loads(frame_data)
+        
+        # Try JPEG decode first (from optimized clients)
+        try:
+            nparr = np.frombuffer(frame_data, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if frame is None:
+                raise ValueError("JPEG decode failed")
+        except:
+            # Fallback to pickle (from old clients)
+            frame = pickle.loads(frame_data)
         
         with frame_lock:
             latest_frame = frame
+        
+        # Update client stats from headers
+        with stats_lock:
+            client_stats['fps'] = float(request.headers.get('X-Client-FPS', 0))
+            client_stats['buffer'] = request.headers.get('X-Buffer', '')
+            client_stats['predicted'] = request.headers.get('X-Predicted', '')
+            client_stats['last_update'] = datetime.now()
         
         return jsonify({"status": "success"}), 200
     except Exception as e:
@@ -291,6 +316,17 @@ def upload_sign():
         print(f"❌ Sign error: {e}")
         return jsonify({"error": str(e)}), 500
 
+# ===== Endpoint: Client Stats =====
+@app.route('/client_stats', methods=['GET'])
+def get_client_stats():
+    """API để lấy thống kê client real-time"""
+    with stats_lock:
+        stats_copy = client_stats.copy()
+        # Convert datetime to string
+        if stats_copy['last_update']:
+            stats_copy['last_update'] = stats_copy['last_update'].strftime('%H:%M:%S')
+        return jsonify(stats_copy), 200
+
 # ===== Endpoint: Upload chung (backward compatible) =====
 @app.route('/upload', methods=['POST'])
 def upload_legacy():
@@ -327,243 +363,133 @@ def video_feed():
 # ===== Web UI =====
 @app.route('/')
 def index():
+    """Render trang chủ với dữ liệu lịch sử"""
     # Lấy danh sách file
     speech_files = sorted(os.listdir(SPEECH_FOLDER), reverse=True)[:10]
     sign_files = sorted(os.listdir(SIGN_FOLDER), reverse=True)[:10]
     
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset='utf-8'>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Speech & Sign Language Server</title>
-        <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-                font-family: 'Segoe UI', Arial, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 20px;
-            }
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                overflow: hidden;
-            }
-            .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-            }
-            .header h1 { font-size: 2em; margin-bottom: 10px; }
-            .stats {
-                display: flex;
-                justify-content: center;
-                gap: 30px;
-                margin-top: 15px;
-            }
-            .stat-item {
-                background: rgba(255,255,255,0.2);
-                padding: 10px 20px;
-                border-radius: 10px;
-            }
-            .content {
-                padding: 30px;
-            }
-            .camera-section {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 15px;
-                margin-bottom: 30px;
-            }
-            .camera-section h2 {
-                margin-bottom: 15px;
-                color: #667eea;
-            }
-            .camera-view {
-                width: 100%;
-                max-width: 800px;
-                margin: 0 auto;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            }
-            .camera-view img {
-                width: 100%;
-                height: auto;
-                display: block;
-            }
-            .data-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-            }
-            .section {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 15px;
-            }
-            .section h2 {
-                margin-bottom: 20px;
-                color: #667eea;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .item {
-                background: white;
-                padding: 15px;
-                margin-bottom: 10px;
-                border-radius: 10px;
-                border-left: 4px solid #667eea;
-                transition: transform 0.2s;
-            }
-            .item:hover {
-                transform: translateX(5px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            }
-            .timestamp {
-                color: #666;
-                font-size: 0.85em;
-                margin-bottom: 8px;
-            }
-            .text {
-                color: #333;
-                font-size: 1.1em;
-                line-height: 1.6;
-            }
-            .processed {
-                color: #667eea;
-                font-weight: bold;
-                margin-top: 5px;
-            }
-            .empty {
-                text-align: center;
-                padding: 40px;
-                color: #999;
-            }
-            @media (max-width: 768px) {
-                .content { grid-template-columns: 1fr; }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>🎙️ 🤟 Speech & Sign Language Server</h1>
-                <div class="stats">
-                    <div class="stat-item">🎤 Speech: """ + str(len(speech_files)) + """</div>
-                    <div class="stat-item">🤟 Sign: """ + str(len(sign_files)) + """</div>
-                </div>
-            </div>
-            <div class="content">
-                <div class="camera-section">
-                    <h2>📹 Sign Language Camera Feed</h2>
-                    <div class="camera-view">
-                        <img src="/video_feed" alt="Camera Feed">
-                    </div>
-                </div>
-                
-                <div class="data-grid">
-                    <div class="section">
-                        <h2><span>🎤</span> Speech-to-Text</h2>
-    """
-    
-    if speech_files:
-        for f in speech_files:
-            try:
-                with open(os.path.join(SPEECH_FOLDER, f), 'r', encoding='utf-8') as file:
-                    lines = [line.strip() for line in file.readlines() if line.strip()]
-                    if lines:
-                        content = lines[-1]
-                        timestamp_str = f.replace('speech_', '').replace('.txt', '')
-                        try:
-                            dt = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
-                            time_display = dt.strftime('%Y-%m-%d %H:%M:%S')
-                        except:
-                            time_display = timestamp_str
-                        
-                        html += f"""
-                        <div class="item">
-                            <div class="timestamp">⏰ {time_display}</div>
-                            <div class="text">{content}</div>
-                        </div>
-                        """
-            except:
-                pass
-    else:
-        html += '<div class="empty">📭 Chưa có dữ liệu</div>'
-    
-    html += """
-                </div>
-                <div class="section">
-                    <h2><span>🤟</span> Sign Language</h2>
-    """
-    
-    if sign_files:
-        for f in sign_files:
-            try:
-                with open(os.path.join(SIGN_FOLDER, f), 'r', encoding='utf-8') as file:
-                    lines = file.readlines()
-                    raw = ""
-                    processed = ""
-                    for line in lines:
-                        if line.startswith("Raw:"):
-                            raw = line.replace("Raw:", "").strip()
-                        elif line.startswith("Processed:"):
-                            processed = line.replace("Processed:", "").strip()
+    # Parse speech data
+    speech_data = []
+    for f in speech_files:
+        try:
+            with open(os.path.join(SPEECH_FOLDER, f), 'r', encoding='utf-8') as file:
+                lines = [line.strip() for line in file.readlines() if line.strip()]
+                if lines:
+                    content = lines[-1]
+                    timestamp_str = f.replace('speech_', '').replace('.txt', '')
+                    try:
+                        dt = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                        time_display = dt.strftime('%H:%M:%S')
+                    except:
+                        time_display = timestamp_str
                     
-                    if raw or processed:
-                        timestamp_str = f.replace('sign_', '').replace('.txt', '')
-                        try:
-                            dt = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
-                            time_display = dt.strftime('%Y-%m-%d %H:%M:%S')
-                        except:
-                            time_display = timestamp_str
-                        
-                        html += f"""
-                        <div class="item">
-                            <div class="timestamp">⏰ {time_display}</div>
-                            <div class="text">{raw}</div>
-                            <div class="processed">→ {processed}</div>
-                        </div>
-                        """
-            except:
-                pass
-    else:
-        html += '<div class="empty">📭 Chưa có dữ liệu</div>'
+                    speech_data.append({
+                        'time': time_display,
+                        'text': content
+                    })
+        except:
+            pass
     
-    html += """
-                </div>
-                </div>
-            </div>
-        </div>
-        <script>
-            // Chỉ reload phần data, không reload video stream
-            setInterval(() => {
-                fetch(window.location.href)
-                    .then(r => r.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newDataGrid = doc.querySelector('.data-grid');
-                        const oldDataGrid = document.querySelector('.data-grid');
-                        if (newDataGrid && oldDataGrid) {
-                            oldDataGrid.innerHTML = newDataGrid.innerHTML;
-                        }
-                    });
-            }, 5000);
-        </script>
-    </body>
-    </html>
-    """
+    # Parse sign data
+    sign_data = []
+    for f in sign_files:
+        try:
+            with open(os.path.join(SIGN_FOLDER, f), 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+                raw = ""
+                processed = ""
+                for line in lines:
+                    if line.startswith("Raw:"):
+                        raw = line.replace("Raw:", "").strip()
+                    elif line.startswith("Processed:"):
+                        processed = line.replace("Processed:", "").strip()
+                
+                if raw or processed:
+                    timestamp_str = f.replace('sign_', '').replace('.txt', '')
+                    try:
+                        dt = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                        time_display = dt.strftime('%H:%M:%S')
+                    except:
+                        time_display = timestamp_str
+                    
+                    sign_data.append({
+                        'time': time_display,
+                        'raw': raw,
+                        'processed': processed
+                    })
+        except:
+            pass
     
-    return html
+    # Render template
+    return render_template('index.html',
+                          speech_count=len(speech_files),
+                          sign_count=len(sign_files),
+                          speech_data=speech_data,
+                          sign_data=sign_data)
+
+# ===== API: Get History (for AJAX reload) =====
+@app.route('/api/history', methods=['GET'])
+def api_history():
+    """API trả về lịch sử (dùng cho AJAX reload)"""
+    speech_files = sorted(os.listdir(SPEECH_FOLDER), reverse=True)[:10]
+    sign_files = sorted(os.listdir(SIGN_FOLDER), reverse=True)[:10]
+    
+    # Parse speech data
+    speech_data = []
+    for f in speech_files:
+        try:
+            with open(os.path.join(SPEECH_FOLDER, f), 'r', encoding='utf-8') as file:
+                lines = [line.strip() for line in file.readlines() if line.strip()]
+                if lines:
+                    content = lines[-1]
+                    timestamp_str = f.replace('speech_', '').replace('.txt', '')
+                    try:
+                        dt = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                        time_display = dt.strftime('%H:%M:%S')
+                    except:
+                        time_display = timestamp_str
+                    
+                    speech_data.append({
+                        'time': time_display,
+                        'text': content
+                    })
+        except:
+            pass
+    
+    # Parse sign data
+    sign_data = []
+    for f in sign_files:
+        try:
+            with open(os.path.join(SIGN_FOLDER, f), 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+                raw = ""
+                processed = ""
+                for line in lines:
+                    if line.startswith("Raw:"):
+                        raw = line.replace("Raw:", "").strip()
+                    elif line.startswith("Processed:"):
+                        processed = line.replace("Processed:", "").strip()
+                
+                if raw or processed:
+                    timestamp_str = f.replace('sign_', '').replace('.txt', '')
+                    try:
+                        dt = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                        time_display = dt.strftime('%H:%M:%S')
+                    except:
+                        time_display = timestamp_str
+                    
+                    sign_data.append({
+                        'time': time_display,
+                        'raw': raw,
+                        'processed': processed
+                    })
+        except:
+            pass
+    
+    return jsonify({
+        'speech': speech_data,
+        'sign': sign_data
+    }), 200
 
 if __name__ == '__main__':
     import socket
