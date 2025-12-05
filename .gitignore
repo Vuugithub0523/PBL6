@@ -20,7 +20,10 @@ vsl_unified_env/
 checkpoints_from_video/*.pth
 !checkpoints_from_video/.gitkeep
 
-# ===== Data Files =====
+# ===== Pickle Files (Models) =====
+*.pkl
+
+# ===== Data Files (Training data quá lớn) =====
 *.csv
 training_history.json
 
@@ -30,7 +33,12 @@ received_transcripts/
 outputs_word_pytorch/
 *.wav
 speech_temp.wav
+speech_ptt.wav
+speech_history.txt
 history.txt
+
+# ===== Temporary Files =====
+CLEANUP_SUMMARY.md
 
 # ===== IDE =====
 .vscode/
@@ -47,3 +55,6 @@ desktop.ini
 *.log
 *.tmp
 *.bak
+
+# ===== Git =====
+.git/
