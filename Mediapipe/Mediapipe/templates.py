@@ -12,11 +12,11 @@ def get_index_html(username, speech_folder, sign_folder):
 <html><head><meta charset="utf-8"><title>Sign Language Server</title>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:'Segoe UI',Arial;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+body{{font-family:'Segoe UI',Arial;background:#f5f5f5;
 min-height:100vh;padding:20px}}
 .container{{max-width:1200px;margin:0 auto;background:#fff;border-radius:20px;
 box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}}
-.header{{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;
+.header{{background:#667eea;color:#fff;
 padding:30px;text-align:center;position:relative}}
 .header h1{{font-size:2em;margin-bottom:10px}}
 .user-info{{position:absolute;top:20px;right:30px;display:flex;align-items:center;gap:15px}}
@@ -48,23 +48,23 @@ transition:transform .2s}}
 <div class="container">
 <div class="header">
 <div class="user-info">
-<div class="user-name">👤 {username}</div>
+<div class="user-name">{username}</div>
 <button class="logout-btn" onclick="location.href='/logout'">Đăng xuất</button>
 </div>
-<h1>🎙️ 🤟 Speech & Sign Language Server</h1>
+<h1>Speech & Sign Language Server</h1>
 <div class="stats">
-<div class="stat-item">🎤 Speech: {len(speech_files)}</div>
-<div class="stat-item">🤟 Sign: {len(sign_files)}</div>
+<div class="stat-item">Speech: {len(speech_files)}</div>
+<div class="stat-item">Sign: {len(sign_files)}</div>
 </div></div>
 <div class="content">
 <div class="camera-section">
-<h2>📹 Sign Language Camera Feed</h2>
+<h2>Sign Language Camera Feed</h2>
 <div class="camera-view">
 <img src="/video_feed" alt="Camera Feed">
 </div></div>
 <div class="data-grid">
 <div class="section">
-<h2><span>🎤</span> Speech-to-Text</h2>'''
+<h2><span>Speech-to-Text</span></h2>'''
     
     if speech_files:
         for f in speech_files:
@@ -81,15 +81,15 @@ transition:transform .2s}}
                             time_display = ts
                         
                         html += f'''<div class="item">
-<div class="timestamp">⏰ {time_display}</div>
+<div class="timestamp">{time_display}</div>
 <div class="text">{content}</div>
 </div>'''
             except:
                 pass
     else:
-        html += '<div class="empty">🔭 Chưa có dữ liệu</div>'
+        html += '<div class="empty">Chưa có dữ liệu</div>'
     
-    html += '</div><div class="section"><h2><span>🤟</span> Sign Language</h2>'
+    html += '</div><div class="section"><h2><span>Sign Language</span></h2>'
     
     if sign_files:
         for f in sign_files:
@@ -112,14 +112,14 @@ transition:transform .2s}}
                             time_display = ts
                         
                         html += f'''<div class="item">
-<div class="timestamp">⏰ {time_display}</div>
+<div class="timestamp">{time_display}</div>
 <div class="text">{raw}</div>
 <div class="processed">→ {processed}</div>
 </div>'''
             except:
                 pass
     else:
-        html += '<div class="empty">🔭 Chưa có dữ liệu</div>'
+        html += '<div class="empty">Chưa có dữ liệu</div>'
     
     html += '''</div></div></div></div>
 <script>
