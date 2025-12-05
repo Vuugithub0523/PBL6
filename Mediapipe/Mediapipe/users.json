@@ -1,0 +1,17 @@
+{
+  "user1": {
+    "password": "1718c24b10aeb8099e3fc44960ab6949ab76a267352459f203ea1036bec382c2",
+    "secret_2fa": "ZCDCJS6EWFS6OFFCVELAUCMEINAP3CVM",
+    "created_at": "2025-12-04T20:15:52.808924"
+  },
+  "user2": {
+    "password": "49b03098fb0ccb35b4ce27a3ff5d10d571f37f32d192e8af5117e4a8a9ab556e",
+    "secret_2fa": "4PSCA4ZXH7OM46AO66ANMT2NR6Q3SWG3",
+    "created_at": "2025-12-04T20:17:35.737312"
+  },
+  "d3r4nk": {
+    "password": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+    "secret_2fa": "LBGAUJ3T6MYP2SRIX6O7WDAZDHY7VRRX",
+    "created_at": "2025-12-05T10:01:09.885774"
+  }
+}
