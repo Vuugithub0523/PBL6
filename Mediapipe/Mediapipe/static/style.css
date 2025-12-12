@@ -8,8 +8,8 @@
     --bg-light: #F5F7FA;
     --text-dark: #2C3E50;
     --text-light: #7F8C8D;
-    --shadow: 0 4px 6px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* Reset */
@@ -21,7 +21,9 @@
 
 body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-image: url("/static/images/BackgroundDashboard.jpg");
+    background-size: cover;
+    background-position: center;
     background-attachment: fixed;
     min-height: 100vh;
     color: var(--text-dark);
@@ -45,8 +47,15 @@ body {
 }
 
 @keyframes slideDown {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .header-content {
@@ -68,6 +77,39 @@ body {
 
 .header h1 i {
     color: var(--primary);
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-badge {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logout-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
 }
 
 .stats-row {
@@ -101,8 +143,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Camera Section */
@@ -134,7 +181,7 @@ body {
     border-radius: 12px;
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
     min-height: 400px;
     display: flex;
     align-items: center;
@@ -192,8 +239,13 @@ body {
     color: var(--primary);
 }
 
-.stat-value.success { color: var(--secondary); }
-.stat-value.warning { color: var(--accent); }
+.stat-value.success {
+    color: var(--secondary);
+}
+
+.stat-value.warning {
+    color: var(--accent);
+}
 
 .stats-footer {
     background: white;
@@ -255,6 +307,7 @@ body {
         transform: translateX(-20px);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -317,8 +370,15 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* Responsive */
@@ -326,7 +386,7 @@ body {
     .main-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -336,14 +396,202 @@ body {
     .header h1 {
         font-size: 1.4em;
     }
-    
+
     .stats-row {
         width: 100%;
         justify-content: center;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
 }
 
+/* Delete Button Styles */
+.delete-btn {
+    background: rgba(255, 59, 48, 0.9);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 59, 48, 1);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+.delete-btn:active {
+    transform: scale(0.98);
+}
+
+.delete-btn i {
+    font-size: 0.95em;
+}
+
+/* Loading state for delete button */
+.delete-btn.loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.delete-btn.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Confirmation Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #ff3b30;
+}
+
+.modal-header i {
+    font-size: 1.5em;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.modal-body {
+    margin-bottom: 25px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+.modal-btn.cancel {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.modal-btn.cancel:hover {
+    background: #d0d0d0;
+}
+
+.modal-btn.confirm {
+    background: #ff3b30;
+    color: white;
+}
+
+.modal-btn.confirm:hover {
+    background: #e6342a;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+/* Success notification */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4caf50;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideInRight 0.4s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.notification.error {
+    background: #ff3b30;
+}
+
+.notification i {
+    font-size: 1.2em;
+}

@@ -1,0 +1,83 @@
+========================================
+DANH SÁCH CÁC FILE/THƯ MỤC KHÔNG NÉN VÀO ZIP
+========================================
+
+❌ KHÔNG NÉN CÁC FILE/THƯ MỤC SAU:
+
+1. VIRTUAL ENVIRONMENT (KHÔNG GIAN ẢO)
+   ❌ hand_env/                    - Toàn bộ thư mục virtual environment
+   ❌ venv/                        - Virtual environment (nếu có)
+   ❌ env/                         - Virtual environment (nếu có)
+   ❌ .venv/                       - Virtual environment ẩn (nếu có)
+
+2. PYTHON CACHE & COMPILED FILES
+   ❌ __pycache__/                - Thư mục cache của Python
+   ❌ *.pyc                        - File compiled Python
+   ❌ *.pyo                        - File optimized Python
+   ❌ *.pyd                        - Python extension (Windows)
+
+3. IDE CONFIGURATION
+   ❌ .vscode/                     - Cấu hình Visual Studio Code
+   ❌ .idea/                       - Cấu hình PyCharm/IntelliJ (nếu có)
+
+4. RUNTIME DATA
+   ❌ received_data/               - Thư mục chứa dữ liệu khi chạy server
+      └── sign/                    - Dữ liệu sign language runtime
+      └── speech/                  - Dữ liệu speech runtime
+
+5. OS FILES
+   ❌ .DS_Store                    - File hệ thống macOS (nếu có)
+   ❌ Thumbs.db                    - File hệ thống Windows (nếu có)
+   ❌ desktop.ini                  - File hệ thống Windows (nếu có)
+
+6. TEMPORARY & LOG FILES
+   ❌ *.tmp                        - File tạm
+   ❌ *.log                        - File log
+
+7. BACKUP FILES
+   ❌ *~                           - Backup files
+   ❌ *.swp                        - Vim swap files
+   ❌ *.swo                        - Vim swap files
+
+========================================
+✅ CẦN NÉN VÀO ZIP:
+
+1. SOURCE CODE (.py)
+   ✅ unified_server.py
+   ✅ Mediapipe.py
+   ✅ outputTiengViet.py
+   ✅ Train.py
+   ✅ templates.py (nếu cần)
+
+2. CONFIG FILES
+   ✅ users.json
+   ✅ client_api_keys.json
+   ✅ sign_mapping.json
+   ✅ selected_tags_names.txt
+
+3. TEMPLATES & STATIC
+   ✅ templates/index.html
+   ✅ static/style.css
+   ✅ static/app.js
+   ✅ static/images/ (tất cả ảnh)
+
+4. MODEL FILES (nếu cần)
+   ✅ best_vsl_landmarks_model.h5
+   ✅ vsl_landmarks_model.tflite
+   ✅ label_encoder.pkl
+   ✅ scaler.pkl
+
+5. TRAINING DATA (nếu giảng viên yêu cầu)
+   ✅ landmarks_train.csv
+   ✅ landmarks_val.csv
+   ✅ landmarks_test.csv
+
+========================================
+📝 LƯU Ý:
+
+- File CSV có thể rất lớn (12MB, 2.5MB). Nếu giảng viên không yêu cầu, có thể bỏ qua.
+- File model .h5 có thể lớn (761KB), nên giữ lại vì cần thiết để chạy ứng dụng.
+- Virtual environment (hand_env/) KHÔNG BAO GIỜ nén vào, chỉ cần file requirements.txt (nếu có).
+
+========================================
+

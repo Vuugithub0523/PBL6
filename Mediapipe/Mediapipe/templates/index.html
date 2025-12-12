@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
@@ -16,19 +18,30 @@
                     <i class="fas fa-language"></i>
                     Hệ Thống Phiên Dịch Ngôn Ngữ Ký Hiệu
                 </h1>
-                <div class="stats-row">
-                    <div class="stat-badge">
-                        <i class="fas fa-microphone"></i>
-                        <span>Giọng nói: {{ speech_count }}</span>
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div class="user-section">
+                        <div class="user-badge">
+                            <i class="fas fa-user"></i>
+                            {{ username }}
+                        </div>
+                        <button class="logout-btn" onclick="location.href='/logout'">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </button>
                     </div>
-                    <div class="stat-badge success">
-                        <i class="fas fa-hands"></i>
-                        <span>Ký hiệu: {{ sign_count }}</span>
+                    <div class="stats-row">
+                        <div class="stat-badge">
+                            <i class="fas fa-microphone"></i>
+                            <span>Giọng nói: {{ speech_count }}</span>
+                        </div>
+                        <div class="stat-badge success">
+                            <i class="fas fa-hands"></i>
+                            <span>Ký hiệu: {{ sign_count }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Main Layout -->
         <div class="main-layout">
             <!-- Left: Camera -->
@@ -41,7 +54,7 @@
                     <div class="camera-view">
                         <img src="/video_feed" alt="Camera Feed" id="camera-stream">
                     </div>
-                    
+
                     <!-- Client Stats -->
                     <div class="stats-card">
                         <h3>
@@ -76,57 +89,71 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Right: History -->
             <div class="right-column">
                 <!-- Speech History -->
-                <div class="history-card">
-                    <div class="card-header">
-                        <i class="fas fa-microphone-alt"></i>
-                        Lịch Sử Giọng Nói
-                    </div>
-                    <div class="history-content" id="speech-history">
-                        {% if speech_data %}
-                            {% for item in speech_data %}
-                            <div class="history-item">
-                                <div class="item-time">
-                                    <i class="fas fa-clock"></i>
-                                    {{ item.time }}
-                                </div>
-                                <div class="item-text">{{ item.text }}</div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>Chưa có dữ liệu giọng nói</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Sign Language History -->
+                <!-- Speech History Card - UPDATE THIS SECTION -->
+<div class="history-card">
+    <div class="card-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <i class="fas fa-microphone-alt"></i>
+                Lịch Sử Giọng Nói
+            </div>
+            <button class="delete-btn" onclick="deleteHistory('speech')" title="Xóa lịch sử giọng nói">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </div>
+    <div class="history-content" id="speech-history">
+        {% if speech_data %}
+        {% for item in speech_data %}
+        <div class="history-item">
+            <div class="item-time">
+                <i class="fas fa-clock"></i>
+                {{ item.time }}
+            </div>
+            <div class="item-text">{{ item.text }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>Chưa có dữ liệu giọng nói</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
                 <div class="history-card">
                     <div class="card-header" style="background: linear-gradient(135deg, var(--secondary), #45a049);">
-                        <i class="fas fa-hands"></i>
-                        Lịch Sử Ký Hiệu
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div>
+                                <i class="fas fa-hands"></i>
+                                Lịch Sử Ký Hiệu
+                            </div>
+                            <button class="delete-btn" onclick="deleteHistory('sign')" title="Xóa lịch sử ký hiệu">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="history-content" id="sign-history">
                         {% if sign_data %}
-                            {% for item in sign_data %}
-                            <div class="history-item sign">
-                                <div class="item-time">
-                                    <i class="fas fa-clock"></i>
-                                    {{ item.time }}
-                                </div>
-                                <div class="item-text" style="color: #666; font-size: 0.95em;">
-                                    <i class="fas fa-keyboard"></i> {{ item.raw }}
-                                </div>
-                                <div class="item-text" style="margin-top: 5px; font-weight: 600; color: var(--secondary);">
-                                    <i class="fas fa-arrow-right"></i> {{ item.processed }}
-                                </div>
+                        {% for item in sign_data %}
+                        <div class="history-item sign">
+                            <div class="item-time">
+                                <i class="fas fa-clock"></i>
+                                {{ item.time }}
                             </div>
-                            {% endfor %}
+                            <div class="item-text" style="color: #666; font-size: 0.95em;">
+                                <i class="fas fa-keyboard"></i> {{ item.raw }}
+                            </div>
+                            <div class="item-text" style="margin-top: 5px; font-weight: 600; color: var(--secondary);">
+                                <i class="fas fa-arrow-right"></i> {{ item.processed }}
+                            </div>
+                        </div>
+                        {% endfor %}
                         {% else %}
                         <div class="empty-state">
                             <i class="fas fa-inbox"></i>
@@ -138,8 +165,27 @@
             </div>
         </div>
     </div>
-    
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Xác Nhận Xóa</h3>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                Bạn có chắc chắn muốn xóa lịch sử này?
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button class="modal-btn confirm" id="confirmDeleteBtn">
+                    <i class="fas fa-check"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
-</html>
 
+</html>
